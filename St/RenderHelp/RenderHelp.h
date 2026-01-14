@@ -305,9 +305,84 @@ inline Vector<N, T> &operator-=(Vector<N, T> &a, const Vector<N, T> &b) {
 }
 // a*=b
 template <size_t N,typename T>
-inline Vector<N,T> &operator +=(Vector<N,T> &a, const Vector<N,T> &b)
+inline Vector<N,T> &operator*=(Vector<N,T> &a, const Vector<N,T> &b)
 {
-  for(size_t)
+  for(size_t i=0;i<N ;i++)
+  {
+    a[i]*=b[i];
+  }
+  return a;
 }
+// a/=b
+template <size_t N,typename T>
+inline Vector<N,T> &operator/=(Vector<N,T>&a ,const Vector<N,T>&b)
+{
+  for(size_t i=0; i<N;i++)
+  {
+    a[i]/=b[i];
+  }
+  return a;
+}
+
+//a*=x
+template<size_t N,typename T>
+inline Vector<N,T> &operator*=(Vector<N,T>&a,T x)
+{
+  for(size_t i=0; i<N;i++)
+  {
+    a[i]*=x;
+  }
+  return a;
+}
+
+// a/=x
+template<size_t N,typename T>
+inline Vector<N,T> &operator/=(Vector<N,T>&a,T x)
+{
+  for(size_t i=0; i<N;i++)
+  {
+  a[i]/=x;
+  }
+  return a;
+}
+
+//------
+//数学库：矢量函数
+//-----
+
+
+//不同维度的矢量转换
+template<size_t N1,size_t N2,typename T>
+inline Vector<N1,T>vector_convert(const Vector<N2,T>&a,T fill=1)
+{
+  Vector<N1,T>b;
+  for(size_t i=0;i<N1;i++)
+  {
+    b[i]=(i<N2)?a[i]:fill;
+  }
+  return b;
+}
+
+// =|a|^2;
+template <size_t N,typename T>
+inline T vector_length_square(const Vector<N,T>&a)
+{
+    T sum=0;
+    for(size_t i=0;i<N;i++)
+    {
+      sum+= a[i]*a[i];
+    }
+    return sum;
+}
+
+//=|a|
+template <size_t N,typename T>
+inline T vector_length(const Vector<N,T>&a)
+{
+  return sqrt(vector_length_square(a)) ;
+}
+
+
+
 
 #endif
