@@ -382,7 +382,30 @@ inline T vector_length(const Vector<N,T>&a)
   return sqrt(vector_length_square(a)) ;
 }
 
+//=|a| .特化float 类型， 使用sqrtf
+template<size_t N> inline float vector_length(const Vector<N,float> &a)
+{
+  return sqrtf(vector_length_square(a));
+}
+//=a /|a|
+template <size_t N,typename T>
+inline Vector<N,T> vector_normalize(const Vector<N,T>&a)
+{
+  return a/vector_length(a);
+}
 
+//矢量点乘
+template<size_t N,typename T>
+inline T vector_dot(const Vector<N,T> &a, const Vector<N,T> &b)
+{
+    T sum=0;
+    for(size_t i=0;i<N;i++)
+    {
+      sum+=a[i]*b[i];
+    }
+    return sum; 
+}
 
+//
 
 #endif
