@@ -663,9 +663,65 @@ template <size_t ROW, size_t COL, typename T>
 inline Matrix<ROW, COL, T> operator*(const Matrix<ROW, COL, T> &a, T x) {
   Matrix<ROW, COL, T> out;
   for (size_t j = 0; j < ROW; j++) {
-    for (size_t i = 0;) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = a.m[j][i] * x;
     }
   }
+  return out;
+}
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator/(const Matrix<ROW, COL, T> &a, T x) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = a.m[j][i] / x;
+    }
+  }
+  return out;
+}
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator*(T x, const Matrix<ROW, COL, T> &a) {
+  return (a * x);
+}
+
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator/(T x, const Matrix<ROW, COL, T> &a) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = x / a.m[j][i];
+    }
+  }
+  return out;
+}
+
+template <size_t ROW, size_t COL, typename T>
+inline Vector<COL, T> operator*(const Vector<ROW, T> &a,
+                                const Matrix<ROW, COL, T> &m) {
+  Vector<COL, T> b;
+  for (size_t i = 0; i < COL; i++) {
+    b[i] = vector_dot(a, m.Col[i]);
+  }
+  return b;
+}
+
+template <size_t ROW, size_t COL, typename T>
+inline Vector<ROW, T> operator*(const Matrix<ROW, COL, T> &m,
+                                const Vector<COL, T> &a) {
+  Vector<ROW, T> b;
+  for (size_t i = 0; i < ROW; i++)
+    b[i] = vector_dot(a, b.Row[i]);
+  return b;
+}
+//--------------------------
+// 数学库:行列式和逆矩阵等，用于光照计算
+//---------
+// 行列式求值：一阶
+template <typename T> inline T matrix_det(const Matrix<1, 1, T> &m) {
+  return m[0][0];
+}
+template <typename T> inline T matrix_det(const Matrix<2, 2, T> &m) {
+  return m[0][0] * m[1][1] - m[0][1] * m[1][0];
 }
 
 #endif
