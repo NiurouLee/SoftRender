@@ -789,7 +789,117 @@ inline Vector<ROW,T> operator*(const Matrix<ROW,COL,T>&m ,const Vector<COL,T>&a)
 }
 //----------------------------------
 //数学库；行列式和逆矩阵光照计算有用
-//----------
+//----------------------------
+
+//行列式求值：一阶
+template<typename T> inline T matrix_det(const Matrix<1,1,T>&m)
+{
+  return m[0][0];
+}
+
+//行列式：二阶
+template<typename T> inline T matrix_det(const Matrix<2,2,T>&m)
+{
+  return m[0][0]*m[1][1]-m[0][1]*m[1][0];
+}
+//行列式求值：多阶行列式，即第一行同他们的余子式相乘求和
+template<size_t N,typename T>inline T matrix_det(const Matrix<N,N,T>&m)
+{
+ T sum=0; 
+ for(size_t i=0;i<N;i++)
+ {
+  sum+=m[0][i]*matrix_cofactor(m,0,i);
+ }
+ return sum;
+}
+//余子式:一阶
+template<typename T> inline T matrix_cofactor(const Matrix<1,1,T>&m,size_t row,size_t col)
+{
+return 0;
+}
+//多阶余子式
+template<size_t N,typename T>
+inline T matrix_cofactor(const Matrix<N,N,T>&m,size_t row,size_t col)
+{
+  return matrix_det(m.GetMinor(row,col)*((row+col)%2)?-1:1);
+}
+//伴随矩阵
+template<size_t N,typename T>
+inline Matrix<N,N,T>matrix_adjoint(const Matrix<N,N,T>&m)
+{
+  Matrix<N,N,T> ret;
+  for(size_t j=0;j<N;j++)
+  {
+    for(size_t i=0;i<N;i++)
+    {
+      ret[j][i]=matrix_cofactor(m,i,j);
+    }
+  }
+  return ret;
+}
+
+//求逆矩阵
+template<size_t N,typename T> 
+inline Matrix<N,N,T> matrix_invert(const Matrix<N,N,T> &m)
+{
+  Matrix<N,N,T>ret=matrix_adjoint(m);
+  T det=vector_dot(m.Row(0),ret.Col(0));
+  return ret/det;
+}
+
+//输出到文本流
+template<size_t ROW,size_t COL,typename  T>
+inline std::ostream &operator<<(std::ostream &os,const Matrix<ROW,COL,T>&m)
+{
+  for(size_t r=0;r<ROW;r++)
+  {
+    Vector<COL,T> row=m.Row(r);
+    os<<row<<std::endl;
+  }
+  return os;
+}
+
+//--------------------------------
+//--工具函数
+//-------------------------------
+template<typename T>inline T Abs(T x){return (x<0)?(-x):x;}
+template<typename T>inline T Max(T x,T y){return (x<y)?y:x;}
+template<typename T> inline T Min(T x,T y){return (x>y)?y:x;}
+
+template<typename T> inline bool NerEqual(T x,T y,T error)
+{
+  return (Abs(x-y)<error);
+}
+
+template<typename T> inline T Between(T xmin,T xmax,T x)
+{
+  return Min(Max(xmin,x),xmax);
+}
+//截取[0,1]的范围
+template<typename T>inline T Saturate(T x){return Between<T>(0,1,x);}
+
+//类型别名
+typedef Vector<2,float> Vec2f;
+typedef Vector<2,double> Vec2d;
+typedef Vector<2,int> Vec2i;
+typedef Vector<3,float> Vec3f;
+typedef Vector<3,double> Vec3d;
+typedef Vector<3,int> Vec3i;
+typedef Vector<4,float> Vec4f;
+typedef Vector<4,double>Vec4d;
+typedef Vector<4,int> Vec4i;
+
+typedef Matrix<4,4,float> Mat4x4f;
+typedef Matrix<3,3,float> Mat3x3f;
+typedef Matrix<4,3,float> Mat4x3f;
+typedef Matrix<3,4,float> Mat3x4f;
+
+//-----------------
+//3D数学运算
+//-----------------
+
+
+
 
 
 
