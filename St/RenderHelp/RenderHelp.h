@@ -3,6 +3,8 @@
 
 #include <assert.h>
 #include <cstdint>
+#include <cstring>
+#include <locale>
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -15,6 +17,7 @@
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
+#include <sys/errno.h>
 #include <vector>
 
 //----
@@ -39,12 +42,12 @@ template <size_t N, typename T> struct Vector {
       m[i] = u.m[i];
     }
   }
-  inline Vector(const std::initializer_list<T> &u) {
-    auto it = u.begin();
-    for (size_t i = 0; i < N; i++) {
-      m[i] = *it++;
-    }
-  }
+  // inline Vector(const std::initializer_list<T> &u) {
+  //   auto it = u.begin();
+  //   for (size_t i = 0; i < N; i++) {
+  //     m[i] = *it++;
+  //   }
+  // }
   inline const T &operator[](size_t i) const {
     assert(i < N);
     return m[i];
@@ -534,14 +537,14 @@ template <size_t ROW,size_t COL,typename T> struct Matrix
       }
     }
   }
-  inline Matrix(const std::initializer_list<Vector<COL,T>> &u)
-  {
-    auto it=u.begin();
-    for(size_t i=0; i<ROW;i++)
-    {
-      SetRow(i,*it++);
-    }
-  }
+  // inline Matrix(const std::initialize_list<Vector<COL,T>> &u)
+  // {
+  //   auto it=u.begin();
+  //   for(size_t i=0; i<ROW;i++)
+  //   {
+  //     SetRow(i,*it++);
+  //   }
+  // }
   inline const T* operator[](size_t row) const 
   {
     assert(row<ROW);
@@ -1022,31 +1025,182 @@ inline static Mat4x4f matrix_set_perspective(float fovy,float aspect ,float zn,f
   m.m[2][3]=1;
   return m;
 }
+//----------
+//位图库，用于加载/保存图片 ，画点，画线颜色读取
+//-----
+class Bitmap
+{
+  public: 
+  inline virtual ~Bitmap()
+  {
+    if(_bits)
+    delete[] _bits;
+    _bits=nullptr;
+  }
+  inline Bitmap(int width,int height):_w(width),_h(height)
+  {
+    _pitch=width*4;
+    _bits=new uint8_t[_pitch*_h];
+    Fill(0);
+  }
 
+  inline Bitmap(const Bitmap &src):_w(src._w),_h(src._h),_pitch(src._pitch)
+  {
+    _bits=new uint8_t[_pitch*_h];
+    memcpy(_bits,src._bits,_pitch*_h);
+  }
 
+  inline Bitmap(const char * filename )
+  {
+    Bitmap* tmp= LoadFile(filename);
+    if(tmp==nullptr)
+    {
+      std::string msg="load filed:";
+      msg.append(filename);
+      throw std::runtime_error(msg);
+    }
+  _w=tmp->_w;
+  _h=tmp->_h;
+  _pitch= tmp->_pitch;
+  _bits=tmp->_bits;
+  tmp->_bits=nullptr;
+  delete tmp;
+  }
+  public:
+  inline int GetW() const {return _w;}
+  inline int GetH() const {return _h;}
+  inline int GetPitch() const {return _pitch;}
+  inline uint8_t *GetBits(){return _bits;}
+  inline const uint8_t *GetBits() const { return _bits;}
+  inline uint8_t *GetLine(int y){return _bits + _pitch * y;}
+  inline const uint8_t *GetLine(int y) const {return _bits+_pitch*y;}
 
+  public:
+  inline void Fill(uint32_t color)
+  {
+    for(int j=0;j<_h;j++)
+    {
+      uint32_t *row=(uint32_t*)(_bits+j*_pitch);
+      for(int i=0;i<_w;i++,row++)
+      {
+        memcpy(row, &color,sizeof(uint32_t));
+      }
+    }
+  }
+  inline void SetPixel(int x,int y,uint32_t color)
+  {
+    if(x>=0&&x<_w&&y>=0&&y<_h)
+    {
+      memcpy(_bits+y*_pitch+x*4, &color,sizeof(uint32_t));
+    }
+  }
+inline uint32_t GetPixel(int x,int y)const 
+{
+  uint32_t color=0;
+  if(x>=0 &&x<_w&&y>=0&&y<_h)
+  {
+    memcpy(&color, _bits+y*_pitch+x*4,sizeof(uint32_t));
+    }
+}
 
+inline void DrawLine(int x1,int y1,int x2,int y2,uint32_t color)
+{
+  int x,y;
+  if(x1==x2 && y1==y2)
+  {
+    SetPixel(x1,y1,color);
+    return ;
+  }
+  else if(x1==x2)
+  {
+    int inc= (y1<=y2)?1:-1;
+    for(y=y1;y!=y2;y+=inc)
+    {
+      SetPixel(x1, y, color);
+    }
+    SetPixel(x2,    y2, color);
+  }
+  else if(y1==y2)
+  {
+    int inc=(x1<=x2)?1:-1;
+    for(x=x1;x!=x2;x+=inc)
+    {
+      SetPixel(x, y1,  color);
+    }
+    SetPixel(x2,y2,  color);
+  }
+  else
+  {
+    int dx=(x1<x2)?x2-x1:x1-x2;
+    int dy=(y1<y2)?y2-y1:y1-y2;
+    int rem=0;
+    if(dx>=dy)
+    {
+      if(x2<x1)
+      x=x1,y=y1,x1=x2,y1=y2,x2=x,y2=y;
+    for(x=x1,y=y1;x<=x2;x++)
+    {
+      SetPixel(x,  y,  color);
+      rem+=dy;
+      if(rem>=dx){
+        rem-=dx;
+        y+=(y2>=y1)?1:-1;
+        SetPixel(x, y,  color);
+      }
+    }
+    SetPixel(x2, y2,  color);
+    }
+  else
+  {
+    if(y2<y1)
+    {
+      x=x1,y=y1,x1=x2,y1=y2,x2=x,y2=y;
+      for(x=x1,y=y1;y<=y2;y++)
+      {
+        SetPixel(x,  y,  color);
+        rem+=dx;
+        if(rem>=dy)
+        {
+          rem-=dy;
+          x+=(x2>=x1)?1:-1;
+          SetPixel(x,y,  color);
+        }
+      }
+      SetPixel(x2,  y2,  color)
+    }
+  }
+}
+protected:
+int32_t _w;
+int32_t _h;
+int32_t _pitch;
+uint8_t *_bits;
+}
+struct BITMAPINFOHEADER
+{
+  uint32_t biSize;
+  uint32_t biWidth;
+  int32_t biHeight;
+  uint16_t biPlanes;
+  uint16_t biBitCount;
+  uint32_t bitCompression;
+  uint32_t biSizeImage;
+  uint32_t biXPelsPerMeter;
+  uint32_t biYPelsPerMeter;
+  uint32_t biClrUsed;
+  uint32_t biClrImportant;
+};
+//读取BMP图片，支持24/32 位两种格式
+inline static Bitmap *LoadFile(const char* filename)
+{
+  FILE *fp=fopen(filename,"rb");
+  if(fp=nullptr)
+  return nullptr;
+BITMAPINFOHEADER info;
+uint8_ header[14];
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 #endif
