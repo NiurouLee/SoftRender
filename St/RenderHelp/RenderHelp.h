@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <locale>
 #include <math.h>
@@ -17,7 +18,6 @@
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
-#include <sys/errno.h>
 #include <vector>
 
 //----
@@ -308,232 +308,200 @@ inline Vector<N, T> &operator-=(Vector<N, T> &a, const Vector<N, T> &b) {
   return a;
 }
 // a*=b
-template <size_t N,typename T>
-inline Vector<N,T> &operator*=(Vector<N,T> &a, const Vector<N,T> &b)
-{
-  for(size_t i=0;i<N ;i++)
-  {
-    a[i]*=b[i];
+template <size_t N, typename T>
+inline Vector<N, T> &operator*=(Vector<N, T> &a, const Vector<N, T> &b) {
+  for (size_t i = 0; i < N; i++) {
+    a[i] *= b[i];
   }
   return a;
 }
 // a/=b
-template <size_t N,typename T>
-inline Vector<N,T> &operator/=(Vector<N,T>&a ,const Vector<N,T>&b)
-{
-  for(size_t i=0; i<N;i++)
-  {
-    a[i]/=b[i];
+template <size_t N, typename T>
+inline Vector<N, T> &operator/=(Vector<N, T> &a, const Vector<N, T> &b) {
+  for (size_t i = 0; i < N; i++) {
+    a[i] /= b[i];
   }
   return a;
 }
 
-//a*=x
-template<size_t N,typename T>
-inline Vector<N,T> &operator*=(Vector<N,T>&a,T x)
-{
-  for(size_t i=0; i<N;i++)
-  {
-    a[i]*=x;
+// a*=x
+template <size_t N, typename T>
+inline Vector<N, T> &operator*=(Vector<N, T> &a, T x) {
+  for (size_t i = 0; i < N; i++) {
+    a[i] *= x;
   }
   return a;
 }
 
 // a/=x
-template<size_t N,typename T>
-inline Vector<N,T> &operator/=(Vector<N,T>&a,T x)
-{
-  for(size_t i=0; i<N;i++)
-  {
-  a[i]/=x;
+template <size_t N, typename T>
+inline Vector<N, T> &operator/=(Vector<N, T> &a, T x) {
+  for (size_t i = 0; i < N; i++) {
+    a[i] /= x;
   }
   return a;
 }
 
 //------
-//数学库：矢量函数
+// 数学库：矢量函数
 //-----
 
-
-//不同维度的矢量转换
-template<size_t N1,size_t N2,typename T>
-inline Vector<N1,T>vector_convert(const Vector<N2,T>&a,T fill=1)
-{
-  Vector<N1,T>b;
-  for(size_t i=0;i<N1;i++)
-  {
-    b[i]=(i<N2)?a[i]:fill;
+// 不同维度的矢量转换
+template <size_t N1, size_t N2, typename T>
+inline Vector<N1, T> vector_convert(const Vector<N2, T> &a, T fill = 1) {
+  Vector<N1, T> b;
+  for (size_t i = 0; i < N1; i++) {
+    b[i] = (i < N2) ? a[i] : fill;
   }
   return b;
 }
 
 // =|a|^2;
-template <size_t N,typename T>
-inline T vector_length_square(const Vector<N,T>&a)
-{
-    T sum=0;
-    for(size_t i=0;i<N;i++)
-    {
-      sum+= a[i]*a[i];
-    }
-    return sum;
+template <size_t N, typename T>
+inline T vector_length_square(const Vector<N, T> &a) {
+  T sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    sum += a[i] * a[i];
+  }
+  return sum;
 }
 
 //=|a|
-template <size_t N,typename T>
-inline T vector_length(const Vector<N,T>&a)
-{
-  return sqrt(vector_length_square(a)) ;
+template <size_t N, typename T> inline T vector_length(const Vector<N, T> &a) {
+  return sqrt(vector_length_square(a));
 }
 
 //=|a| .特化float 类型， 使用sqrtf
-template<size_t N> inline float vector_length(const Vector<N,float> &a)
-{
+template <size_t N> inline float vector_length(const Vector<N, float> &a) {
   return sqrtf(vector_length_square(a));
 }
 //=a /|a|
-template <size_t N,typename T>
-inline Vector<N,T> vector_normalize(const Vector<N,T>&a)
-{
-  return a/vector_length(a);
+template <size_t N, typename T>
+inline Vector<N, T> vector_normalize(const Vector<N, T> &a) {
+  return a / vector_length(a);
 }
 
-//矢量点乘
-template<size_t N,typename T>
-inline T vector_dot(const Vector<N,T> &a, const Vector<N,T> &b)
-{
-    T sum=0;
-    for(size_t i=0;i<N;i++)
-    {
-      sum+=a[i]*b[i];
-    }
-    return sum; 
+// 矢量点乘
+template <size_t N, typename T>
+inline T vector_dot(const Vector<N, T> &a, const Vector<N, T> &b) {
+  T sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    sum += a[i] * b[i];
+  }
+  return sum;
 }
 
-//矢量差乘，得到标量
-template <typename  T>
-inline T vector_cross(const Vector<2,T>&a,const Vector<2,T> &b)
-{
-  return a.x*b.y-a.y*b.x;
+// 矢量差乘，得到标量
+template <typename T>
+inline T vector_cross(const Vector<2, T> &a, const Vector<2, T> &b) {
+  return a.x * b.y - a.y * b.x;
 }
 
-
-//三维矢量差乘，得到新矢量
-template<typename T>
-inline Vector<3,T> vector_cross(const Vector<3,T> &a,const Vector<3,T>&b)
-{
-  return Vector<3,T>(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.z);
+// 三维矢量差乘，得到新矢量
+template <typename T>
+inline Vector<3, T> vector_cross(const Vector<3, T> &a, const Vector<3, T> &b) {
+  return Vector<3, T>(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+                      a.x * b.y - a.y * b.z);
 }
-//四维矢量叉乘：前三位叉乘，最后一位保留
-template<typename T>
-inline Vector<4,T>vector_cross(const Vector<4,T>&a,const Vector<4,T>&b)
-{
-  return Vector<4,T>(a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x,a.w);
+// 四维矢量叉乘：前三位叉乘，最后一位保留
+template <typename T>
+inline Vector<4, T> vector_cross(const Vector<4, T> &a, const Vector<4, T> &b) {
+  return Vector<4, T>(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+                      a.x * b.y - a.y * b.x, a.w);
 }
 //=a+(b-a)*t
-template<size_t N,typename T>
-inline Vector<N,T> vector_lerp(const Vector<N,T> &a,const Vector<N,T> &b,float t)
-{
-  return a+(b-a)*t;
+template <size_t N, typename T>
+inline Vector<N, T> vector_lerp(const Vector<N, T> &a, const Vector<N, T> &b,
+                                float t) {
+  return a + (b - a) * t;
 }
 
-//各个元素取最大值
-template <size_t N,typename  T>
-inline Vector<N,T> vector_max(const Vector<N,T>&a,const Vector<N,T> &b)
-{
-  Vector<N,T>c;
-  for(size_t i=0;i<N;i++)
-  {
-    c[i]=(a[i]>b[i])?a[i]:b[i];
+// 各个元素取最大值
+template <size_t N, typename T>
+inline Vector<N, T> vector_max(const Vector<N, T> &a, const Vector<N, T> &b) {
+  Vector<N, T> c;
+  for (size_t i = 0; i < N; i++) {
+    c[i] = (a[i] > b[i]) ? a[i] : b[i];
   }
   return c;
 }
 
-//各个元素取最小值
-template<size_t N,typename T>
-inline Vector<N,T> vector_min(const Vector<N,T> &a,const Vector<N,T> &b)
-{
-  Vector<N,T> c;
-  for(size_t i=0; i<N;i++)
-  {
-    c[i]=(a[i]<b[i])?a[i]:b[i];
+// 各个元素取最小值
+template <size_t N, typename T>
+inline Vector<N, T> vector_min(const Vector<N, T> &a, const Vector<N, T> &b) {
+  Vector<N, T> c;
+  for (size_t i = 0; i < N; i++) {
+    c[i] = (a[i] < b[i]) ? a[i] : b[i];
   }
   return c;
 }
 
-//将矢量的值控制在minx/maxx范围内
-template <size_t N,typename T>
-inline Vector<N,T>vector_between(const Vector<N,T> &minx, const Vector<N,T>& maxx,const Vector<N,T>&x)
-{
-  return vector_min(vector_max(minx,x),maxx);
+// 将矢量的值控制在minx/maxx范围内
+template <size_t N, typename T>
+inline Vector<N, T> vector_between(const Vector<N, T> &minx,
+                                   const Vector<N, T> &maxx,
+                                   const Vector<N, T> &x) {
+  return vector_min(vector_max(minx, x), maxx);
 }
 
-//判断矢量是否接近
-template<size_t N>
-inline bool vector_near_equal(const Vector<N,float>&a ,const Vector<N,float>&b,float e=0.0001)
-{
-  return vector_near(a,b,e);
+// 判断矢量是否接近
+template <size_t N>
+inline bool vector_near_equal(const Vector<N, float> &a,
+                              const Vector<N, float> &b, float e = 0.0001) {
+  return vector_near(a, b, e);
 }
 
-//判断两个双精度矢量是否接近
-template<size_t N>
-inline bool vector_near_equal(const Vector<N,double> &a, const Vector<N,double>&b,double e=0.0000001)
-{
-  return vector_near(a,b,e);
+// 判断两个双精度矢量是否接近
+template <size_t N>
+inline bool vector_near_equal(const Vector<N, double> &a,
+                              const Vector<N, double> &b,
+                              double e = 0.0000001) {
+  return vector_near(a, b, e);
 }
 
-//矢量元素范围裁剪
-template<size_t N,typename T>
-inline Vector<N,T>vector_clamp(const Vector<N,T>&a, T minx=0,T maxx=1)
-{
-  Vector<N,T> b;
-  for(size_t i=0;i<N;i++)
-  {
-    T x=(a[i]<minx)?minx:a[i];
-    b[i]=(x>maxx)?maxx:x;
+// 矢量元素范围裁剪
+template <size_t N, typename T>
+inline Vector<N, T> vector_clamp(const Vector<N, T> &a, T minx = 0,
+                                 T maxx = 1) {
+  Vector<N, T> b;
+  for (size_t i = 0; i < N; i++) {
+    T x = (a[i] < minx) ? minx : a[i];
+    b[i] = (x > maxx) ? maxx : x;
   }
   return b;
 }
-//输出到流文本
-template <size_t N,typename T>
-inline std::ostream &operator<<(std::ostream &os,const Vector<N,T> &a)
-{
-  os<<"[";
-  for(size_t i=0;i<N ;i++)
-  {
-    os<<a[i];
-    if(i<N-1)
-    {
-      os<<",";
+// 输出到流文本
+template <size_t N, typename T>
+inline std::ostream &operator<<(std::ostream &os, const Vector<N, T> &a) {
+  os << "[";
+  for (size_t i = 0; i < N; i++) {
+    os << a[i];
+    if (i < N - 1) {
+      os << ",";
     }
-    os<<']';
+    os << ']';
   }
-    return os;
+  return os;
 }
 
-//输出成字符串
-template<size_t N,typename T> 
-inline std::string vector_repr(const Vector<N,T> &a)
-{
+// 输出成字符串
+template <size_t N, typename T>
+inline std::string vector_repr(const Vector<N, T> &a) {
   std::stringstream ss;
-  ss<<a;
+  ss << a;
   return ss.str();
 }
 
 //---------------
-//数学库：矩阵
+// 数学库：矩阵
 //-------------
-template <size_t ROW,size_t COL,typename T> struct Matrix
-{
+template <size_t ROW, size_t COL, typename T> struct Matrix {
   T m[ROW][COL];
-  inline Matrix(){}
-  inline Matrix(const Matrix<ROW,COL,T> &src)
-  {
-    for(size_t r=0;r<ROW;r++)
-    {
-      for(size_t c=0; c<COL;c++)
-      {
-        m[r][c]=src.m[r][c];
+  inline Matrix() {}
+  inline Matrix(const Matrix<ROW, COL, T> &src) {
+    for (size_t r = 0; r < ROW; r++) {
+      for (size_t c = 0; c < COL; c++) {
+        m[r][c] = src.m[r][c];
       }
     }
   }
@@ -545,320 +513,268 @@ template <size_t ROW,size_t COL,typename T> struct Matrix
   //     SetRow(i,*it++);
   //   }
   // }
-  inline const T* operator[](size_t row) const 
-  {
-    assert(row<ROW);
+  inline const T *operator[](size_t row) const {
+    assert(row < ROW);
     return m[row];
   }
-  inline T *operator[](size_t row)
-  {
-    assert(row<ROW);
+  inline T *operator[](size_t row) {
+    assert(row < ROW);
     return m[row];
   }
-//取一行
-inline Vector<COL,T> Row(size_t row) const 
-{
-  assert(row<ROW);
-  Vector<COL,T> a;
-  for(size_t i=0;i< COL ;i++)
-  {
-    a[i]=m[row][i];
+  // 取一行
+  inline Vector<COL, T> Row(size_t row) const {
+    assert(row < ROW);
+    Vector<COL, T> a;
+    for (size_t i = 0; i < COL; i++) {
+      a[i] = m[row][i];
+    }
+    return a;
   }
-  return a;
-}
-//取一列
-inline  Vector<ROW,T> Col(size_t col) const 
-{
-  assert(col<COL);
-  Vector<ROW,T> a;
-  for(size_t i=0;i<ROW;i++)
-  {
-    a[i]=m[i][col];
+  // 取一列
+  inline Vector<ROW, T> Col(size_t col) const {
+    assert(col < COL);
+    Vector<ROW, T> a;
+    for (size_t i = 0; i < ROW; i++) {
+      a[i] = m[i][col];
+    }
+    return a;
   }
-  return a;
-}
-//设置一行
-inline void SetRow(size_t row,const Vector<COL,T>&a )
-{
-  assert(row<ROW);
-  for(size_t i=0;i<COL;i++)
-  {
-    m[row][i]=a;
-  }
-}
-
-//设置一列
-inline void SetCol(size_t col,const Vector<ROW,T> &a)
-{
-  assert(col<COL);
-  for(size_t i=0; i<ROW; i++)
-  {
-    m[i][col] =a[i];
-  }
-}
-
-//取得删除某行和某列的子矩阵：子式
-inline Matrix<ROW-1,COL-1,T> GetMinor(size_t row,size_t col ) const {
-  Matrix<ROW-1,COL-1,T> ret;
-  for(size_t r=0;r<ROW-1;r++)
-  {
-    for(size_t c=0;c<COL-1;c++)
-    {
-      ret.m[r][c]=m[r<row?r:r+1][c<col?c:c+1];
+  // 设置一行
+  inline void SetRow(size_t row, const Vector<COL, T> &a) {
+    assert(row < ROW);
+    for (size_t i = 0; i < COL; i++) {
+      m[row][i] = a;
     }
   }
-  return ret;
-}
 
-//取得转置矩阵
-inline Matrix<COL,ROW,T> Transpose() const 
-{
-  Matrix<COL,ROW,T> ret;
-  for(size_t r=0;r<ROW;r++)
-  {
-    for(size_t c=0;c<COL;c++)
-    {
-      ret.m[c][r]=m[r][c];
+  // 设置一列
+  inline void SetCol(size_t col, const Vector<ROW, T> &a) {
+    assert(col < COL);
+    for (size_t i = 0; i < ROW; i++) {
+      m[i][col] = a[i];
     }
   }
-  return ret;
-}
-//取得0矩阵
-inline  static Matrix<ROW,COL,T> GetZero(){
-  Matrix<ROW,COL,T> ret;
-  for(size_t r=0; r<ROW;r++)
-  {
-    for(size_t c=0; c<COL;c++)
-    ret.m[r][c]=0;
-  }
-}
 
-//取得单位矩阵
-inline static Matrix<ROW,COL,T> GetIdentity()
-{
-  Matrix<ROW,COL,T>ret;
-  for(size_t r=0;r<ROW;r++)
-  {
-    for(size_t c=0;c<COL;c++)
-    {
-      ret.m[r][c]=(r==c)?1:0;
-    }
-  }
-}
-};
-//---- 
-//数学库 ：矩阵运算
-//---
-template <size_t ROW,size_t COL,typename T>
-inline bool operator == (const Matrix<ROW ,COL,T> &a,Matrix<ROW,COL,T>&b )
-{
-    for(size_t r=0; r<ROW; r++)
-    {
-      for(size_t c=0;c<COL; c++)
-      {
-        if(a.m[r][c]!=b.b[r][c])
-        {
-          return false;
-        }
+  // 取得删除某行和某列的子矩阵：子式
+  inline Matrix<ROW - 1, COL - 1, T> GetMinor(size_t row, size_t col) const {
+    Matrix<ROW - 1, COL - 1, T> ret;
+    for (size_t r = 0; r < ROW - 1; r++) {
+      for (size_t c = 0; c < COL - 1; c++) {
+        ret.m[r][c] = m[r < row ? r : r + 1][c < col ? c : c + 1];
       }
     }
-    return true;
+    return ret;
+  }
+
+  // 取得转置矩阵
+  inline Matrix<COL, ROW, T> Transpose() const {
+    Matrix<COL, ROW, T> ret;
+    for (size_t r = 0; r < ROW; r++) {
+      for (size_t c = 0; c < COL; c++) {
+        ret.m[c][r] = m[r][c];
+      }
+    }
+    return ret;
+  }
+  // 取得0矩阵
+  inline static Matrix<ROW, COL, T> GetZero() {
+    Matrix<ROW, COL, T> ret;
+    for (size_t r = 0; r < ROW; r++) {
+      for (size_t c = 0; c < COL; c++)
+        ret.m[r][c] = 0;
+    }
+  }
+
+  // 取得单位矩阵
+  inline static Matrix<ROW, COL, T> GetIdentity() {
+    Matrix<ROW, COL, T> ret;
+    for (size_t r = 0; r < ROW; r++) {
+      for (size_t c = 0; c < COL; c++) {
+        ret.m[r][c] = (r == c) ? 1 : 0;
+      }
+    }
+  }
+};
+//----
+// 数学库 ：矩阵运算
+//---
+template <size_t ROW, size_t COL, typename T>
+inline bool operator==(const Matrix<ROW, COL, T> &a, Matrix<ROW, COL, T> &b) {
+  for (size_t r = 0; r < ROW; r++) {
+    for (size_t c = 0; c < COL; c++) {
+      if (a.m[r][c] != b.b[r][c]) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
-template<size_t ROW,size_t COL,typename T>
-inline bool operator!=(const Matrix<ROW,COL,T>&a, const Matrix<ROW,COL,T>&b)
-{
-  return !(a==b);
+template <size_t ROW, size_t COL, typename T>
+inline bool operator!=(const Matrix<ROW, COL, T> &a,
+                       const Matrix<ROW, COL, T> &b) {
+  return !(a == b);
 }
 
-//取正
-template<size_t  ROW,size_t COL, typename T>
-inline Matrix<ROW,COL,T> operator+(const Matrix<ROW,COL,T>&src)
-{
+// 取正
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator+(const Matrix<ROW, COL, T> &src) {
   return src;
 }
 
-//取负
-template <size_t ROW,size_t COL, typename T>
-inline Matrix<ROW,COL,T> operator-(const Matrix<ROW,COL,T>&src)
-{
-  Matrix<ROW,COL,T> out;
-  for(size_t j=0;j<ROW;j++)
-  {
-    for(size_t i=0;i<COL;i++)
-    {
-      out.m[j][i]=-src.m[j][i];
+// 取负
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator-(const Matrix<ROW, COL, T> &src) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = -src.m[j][i];
     }
   }
   return out;
 }
-
 
 /// 加法
-template<size_t ROW,size_t COL,typename T>
-inline Matrix<ROW,COL,T> operator+(const Matrix<ROW,COL,T>&a,const Matrix<ROW,COL,T>&b)
-{
-  Matrix<ROW,COL,T> out;
-  for(size_t j=0;j<ROW;j++)
-  {
-    for(size_t i=0;i<COL;i++)
-    {
-      out.m[j][i]=a.m[j][i]+b.b[j][i];
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator+(const Matrix<ROW, COL, T> &a,
+                                     const Matrix<ROW, COL, T> &b) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = a.m[j][i] + b.b[j][i];
     }
   }
   return out;
 }
 
-//减法
-template<size_t ROW,size_t COL,typename  T>
-inline Matrix<ROW,COL,T>operator-(const Matrix<ROW,COL,T>&a,const Matrix<ROW,COL,T>&b)
-{
-  Matrix<ROW,COL,T> out;
-  for(size_t j=0;j<ROW;j++)
-  {
-    for(size_t i=0;i<COL;i++)
-    {
-      out.m[j][i]=a.m[j][i]-b.m[j][i];
+// 减法
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator-(const Matrix<ROW, COL, T> &a,
+                                     const Matrix<ROW, COL, T> &b) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = a.m[j][i] - b.m[j][i];
     }
     return out;
   }
 }
 
-//乘法
-template<size_t ROW,size_t COL,size_t NEWCOL, typename T>
-inline Matrix<ROW,NEWCOL,T>operator*(const Matrix<ROW,COL,T>&a, const Matrix<COL,NEWCOL,T>&b)
-{
-  Matrix<ROW,COL,T> out;
-  for(size_t j=0;j<ROW;j++)
-  {
-    for(size_t i=0;i<NEWCOL;i++)
-    {
-       out.m[j][i]=vector_dot(a.Row(j),b.Col(i));
+// 乘法
+template <size_t ROW, size_t COL, size_t NEWCOL, typename T>
+inline Matrix<ROW, NEWCOL, T> operator*(const Matrix<ROW, COL, T> &a,
+                                        const Matrix<COL, NEWCOL, T> &b) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < NEWCOL; i++) {
+      out.m[j][i] = vector_dot(a.Row(j), b.Col(i));
     }
   }
   return out;
 }
 
-//乘法
-template<size_t ROW,size_t COL,typename T>
-inline Matrix<ROW,COL,T>  operator*(const Matrix<ROW,COL,T>&a, T x)
-{
-  Matrix<ROW,COL,T> out;
-  for(size_t j=0;j<ROW;j++)
-  {
-    for(size_t i=0;i<COL;i++)
-    {
-      out.m[j][i]=a.m[j][i]*x;
+// 乘法
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator*(const Matrix<ROW, COL, T> &a, T x) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = a.m[j][i] * x;
     }
   }
   return out;
 }
 
-//除法
-template<size_t ROW,size_t COL,typename  T>
-inline Matrix<ROW,COL,T> operator/(const Matrix<ROW,COL,T>&a, T x)
-{
-  Matrix<ROW,COL,T> out;
-  for(size_t j=0;j<ROW;j++)
-  {
-    for(size_t i=0;i<COL;i++)
-    {
-      out.m[j][i]=a.m[j][i]/x;
+// 除法
+template <size_t ROW, size_t COL, typename T>
+inline Matrix<ROW, COL, T> operator/(const Matrix<ROW, COL, T> &a, T x) {
+  Matrix<ROW, COL, T> out;
+  for (size_t j = 0; j < ROW; j++) {
+    for (size_t i = 0; i < COL; i++) {
+      out.m[j][i] = a.m[j][i] / x;
     }
   }
   return out;
 }
 
-//乘法
-template<size_t ROW,size_t COL,typename T>
-inline Vector<COL,T> operator*(const Vector<ROW,T> &a,const Matrix<ROW,COL,T> &m)
-{
-  Vector<COL,T>b;
-  for(size_t i=0;i<COL;i++)
-  {
-    b[i]=vector_dot(a,m.Col(i));
+// 乘法
+template <size_t ROW, size_t COL, typename T>
+inline Vector<COL, T> operator*(const Vector<ROW, T> &a,
+                                const Matrix<ROW, COL, T> &m) {
+  Vector<COL, T> b;
+  for (size_t i = 0; i < COL; i++) {
+    b[i] = vector_dot(a, m.Col(i));
   }
   return b;
 }
-//乘法
-template<size_t ROW,size_t COL,typename  T>
-inline Vector<ROW,T> operator*(const Matrix<ROW,COL,T>&m ,const Vector<COL,T>&a)
-{
-  Vector<ROW,T> b;
-  for(size_t i=0;i<ROW;i++)
-  {
-    b[i]=vector_dot(a,m.ROW(i));
+// 乘法
+template <size_t ROW, size_t COL, typename T>
+inline Vector<ROW, T> operator*(const Matrix<ROW, COL, T> &m,
+                                const Vector<COL, T> &a) {
+  Vector<ROW, T> b;
+  for (size_t i = 0; i < ROW; i++) {
+    b[i] = vector_dot(a, m.ROW(i));
   }
   return b;
 }
 //----------------------------------
-//数学库；行列式和逆矩阵光照计算有用
+// 数学库；行列式和逆矩阵光照计算有用
 //----------------------------
 
-//行列式求值：一阶
-template<typename T> inline T matrix_det(const Matrix<1,1,T>&m)
-{
+// 行列式求值：一阶
+template <typename T> inline T matrix_det(const Matrix<1, 1, T> &m) {
   return m[0][0];
 }
 
-//行列式：二阶
-template<typename T> inline T matrix_det(const Matrix<2,2,T>&m)
-{
-  return m[0][0]*m[1][1]-m[0][1]*m[1][0];
+// 行列式：二阶
+template <typename T> inline T matrix_det(const Matrix<2, 2, T> &m) {
+  return m[0][0] * m[1][1] - m[0][1] * m[1][0];
 }
-//行列式求值：多阶行列式，即第一行同他们的余子式相乘求和
-template<size_t N,typename T>inline T matrix_det(const Matrix<N,N,T>&m)
-{
- T sum=0; 
- for(size_t i=0;i<N;i++)
- {
-  sum+=m[0][i]*matrix_cofactor(m,0,i);
- }
- return sum;
+// 行列式求值：多阶行列式，即第一行同他们的余子式相乘求和
+template <size_t N, typename T> inline T matrix_det(const Matrix<N, N, T> &m) {
+  T sum = 0;
+  for (size_t i = 0; i < N; i++) {
+    sum += m[0][i] * matrix_cofactor(m, 0, i);
+  }
+  return sum;
 }
-//余子式:一阶
-template<typename T> inline T matrix_cofactor(const Matrix<1,1,T>&m,size_t row,size_t col)
-{
-return 0;
+// 余子式:一阶
+template <typename T>
+inline T matrix_cofactor(const Matrix<1, 1, T> &m, size_t row, size_t col) {
+  return 0;
 }
-//多阶余子式
-template<size_t N,typename T>
-inline T matrix_cofactor(const Matrix<N,N,T>&m,size_t row,size_t col)
-{
-  return matrix_det(m.GetMinor(row,col)*((row+col)%2)?-1:1);
+// 多阶余子式
+template <size_t N, typename T>
+inline T matrix_cofactor(const Matrix<N, N, T> &m, size_t row, size_t col) {
+  return matrix_det(m.GetMinor(row, col) * ((row + col) % 2) ? -1 : 1);
 }
-//伴随矩阵
-template<size_t N,typename T>
-inline Matrix<N,N,T>matrix_adjoint(const Matrix<N,N,T>&m)
-{
-  Matrix<N,N,T> ret;
-  for(size_t j=0;j<N;j++)
-  {
-    for(size_t i=0;i<N;i++)
-    {
-      ret[j][i]=matrix_cofactor(m,i,j);
+// 伴随矩阵
+template <size_t N, typename T>
+inline Matrix<N, N, T> matrix_adjoint(const Matrix<N, N, T> &m) {
+  Matrix<N, N, T> ret;
+  for (size_t j = 0; j < N; j++) {
+    for (size_t i = 0; i < N; i++) {
+      ret[j][i] = matrix_cofactor(m, i, j);
     }
   }
   return ret;
 }
 
-//求逆矩阵
-template<size_t N,typename T> 
-inline Matrix<N,N,T> matrix_invert(const Matrix<N,N,T> &m)
-{
-  Matrix<N,N,T>ret=matrix_adjoint(m);
-  T det=vector_dot(m.Row(0),ret.Col(0));
-  return ret/det;
+// 求逆矩阵
+template <size_t N, typename T>
+inline Matrix<N, N, T> matrix_invert(const Matrix<N, N, T> &m) {
+  Matrix<N, N, T> ret = matrix_adjoint(m);
+  T det = vector_dot(m.Row(0), ret.Col(0));
+  return ret / det;
 }
 
-//输出到文本流
-template<size_t ROW,size_t COL,typename  T>
-inline std::ostream &operator<<(std::ostream &os,const Matrix<ROW,COL,T>&m)
-{
-  for(size_t r=0;r<ROW;r++)
-  {
-    Vector<COL,T> row=m.Row(r);
-    os<<row<<std::endl;
+// 输出到文本流
+template <size_t ROW, size_t COL, typename T>
+inline std::ostream &operator<<(std::ostream &os,
+                                const Matrix<ROW, COL, T> &m) {
+  for (size_t r = 0; r < ROW; r++) {
+    Vector<COL, T> row = m.Row(r);
+    os << row << std::endl;
   }
   return os;
 }
@@ -866,341 +782,331 @@ inline std::ostream &operator<<(std::ostream &os,const Matrix<ROW,COL,T>&m)
 //--------------------------------
 //--工具函数
 //-------------------------------
-template<typename T>inline T Abs(T x){return (x<0)?(-x):x;}
-template<typename T>inline T Max(T x,T y){return (x<y)?y:x;}
-template<typename T> inline T Min(T x,T y){return (x>y)?y:x;}
+template <typename T> inline T Abs(T x) { return (x < 0) ? (-x) : x; }
+template <typename T> inline T Max(T x, T y) { return (x < y) ? y : x; }
+template <typename T> inline T Min(T x, T y) { return (x > y) ? y : x; }
 
-template<typename T> inline bool NerEqual(T x,T y,T error)
-{
-  return (Abs(x-y)<error);
+template <typename T> inline bool NerEqual(T x, T y, T error) {
+  return (Abs(x - y) < error);
 }
 
-template<typename T> inline T Between(T xmin,T xmax,T x)
-{
-  return Min(Max(xmin,x),xmax);
+template <typename T> inline T Between(T xmin, T xmax, T x) {
+  return Min(Max(xmin, x), xmax);
 }
-//截取[0,1]的范围
-template<typename T>inline T Saturate(T x){return Between<T>(0,1,x);}
+// 截取[0,1]的范围
+template <typename T> inline T Saturate(T x) { return Between<T>(0, 1, x); }
 
-//类型别名
-typedef Vector<2,float> Vec2f;
-typedef Vector<2,double> Vec2d;
-typedef Vector<2,int> Vec2i;
-typedef Vector<3,float> Vec3f;
-typedef Vector<3,double> Vec3d;
-typedef Vector<3,int> Vec3i;
-typedef Vector<4,float> Vec4f;
-typedef Vector<4,double>Vec4d;
-typedef Vector<4,int> Vec4i;
+// 类型别名
+typedef Vector<2, float> Vec2f;
+typedef Vector<2, double> Vec2d;
+typedef Vector<2, int> Vec2i;
+typedef Vector<3, float> Vec3f;
+typedef Vector<3, double> Vec3d;
+typedef Vector<3, int> Vec3i;
+typedef Vector<4, float> Vec4f;
+typedef Vector<4, double> Vec4d;
+typedef Vector<4, int> Vec4i;
 
-typedef Matrix<4,4,float> Mat4x4f;
-typedef Matrix<3,3,float> Mat3x3f;
-typedef Matrix<4,3,float> Mat4x3f;
-typedef Matrix<3,4,float> Mat3x4f;
+typedef Matrix<4, 4, float> Mat4x4f;
+typedef Matrix<3, 3, float> Mat3x3f;
+typedef Matrix<4, 3, float> Mat4x3f;
+typedef Matrix<3, 4, float> Mat3x4f;
 
 //-----------------
-//3D数学运算
+// 3D数学运算
 //-----------------
 
-//矢量转整数运算
-inline  static uint32_t vector_to_color(const Vec4f &color)
-{
-  uint32_t r=(uint32_t)Between(0,255,(int)(color.r*255.0f));
-  uint32_t g=(uint32_t)Between(0,255,(int)(color.g*255.0f));
-  uint32_t b=(uint32_t)Between(0,255,(int)(color.b*255.0f));
-  uint32_t a=(uint32_t)Between(0,255,(int)(color.a*255.0f));
-  return (r<<16)|(g<<8)|b|(a<<24);
+// 矢量转整数运算
+inline static uint32_t vector_to_color(const Vec4f &color) {
+  uint32_t r = (uint32_t)Between(0, 255, (int)(color.r * 255.0f));
+  uint32_t g = (uint32_t)Between(0, 255, (int)(color.g * 255.0f));
+  uint32_t b = (uint32_t)Between(0, 255, (int)(color.b * 255.0f));
+  uint32_t a = (uint32_t)Between(0, 255, (int)(color.a * 255.0f));
+  return (r << 16) | (g << 8) | b | (a << 24);
 }
 
-
-//矢量转整数颜色
-inline static uint32_t vector_to_color(const Vec3f &color)
-{
+// 矢量转整数颜色
+inline static uint32_t vector_to_color(const Vec3f &color) {
   return vector_to_color(color.xyz1());
 }
 
-//整数颜色到矢量
-inline static Vec4f vector_form_color(uint32_t rgba)
-{
+// 整数颜色到矢量
+inline static Vec4f vector_form_color(uint32_t rgba) {
   Vec4f out;
-  out.r= ((rgba>>16)&0xff)/255.0f;
-  out.g= ((rgba>>8)&0xff)/255.0f;
-  out.b= ((rgba>>0)&0xff)/255.0f;
-  out.a=((rgba>>24)&0xff)/255.0f;
+  out.r = ((rgba >> 16) & 0xff) / 255.0f;
+  out.g = ((rgba >> 8) & 0xff) / 255.0f;
+  out.b = ((rgba >> 0) & 0xff) / 255.0f;
+  out.a = ((rgba >> 24) & 0xff) / 255.0f;
   return out;
 }
 
-//matrix set to zero
-inline static Mat4x4f matrix_set_zero()
-{
+// matrix set to zero
+inline static Mat4x4f matrix_set_zero() {
   Mat4x4f m;
-  m.m[0][0]=m.m[0][1]=m.m[0][2]=m.m[0][3]=0.0f;
-  m.m[1][0]=m.m[1][1]=m.m[1][2]=m.m[1][3]=0.0f;
-  m.m[2][0]=m.m[2][1]=m.m[2][2]=m.m[2][3]=0.0f;
-  m.m[3][0]=m.m[3][1]=m.m[3][2]=m.m[3][3]=0.0f;
+  m.m[0][0] = m.m[0][1] = m.m[0][2] = m.m[0][3] = 0.0f;
+  m.m[1][0] = m.m[1][1] = m.m[1][2] = m.m[1][3] = 0.0f;
+  m.m[2][0] = m.m[2][1] = m.m[2][2] = m.m[2][3] = 0.0f;
+  m.m[3][0] = m.m[3][1] = m.m[3][2] = m.m[3][3] = 0.0f;
   return m;
 }
 
-//set to identity
-inline static Mat4x4f matrix_set_identity()
-{
+// set to identity
+inline static Mat4x4f matrix_set_identity() {
   Mat4x4f m;
-  m.m[0][0]=m.m[1][1]=m.m[2][2]=m.m[3][3]=1.0f;
-  m.m[0][1]=m.m[0][2]=m.m[0][3]=0.0f;
-  m.m[1][0]=m.m[1][2]=m.m[1][3]=0.0f;
-  m.m[2][0]=m.m[2][1]=m.m[2][3]=0.0f;
-  m.m[3][0]=m.m[3][1]=m.m[3][2]=0.0f;
+  m.m[0][0] = m.m[1][1] = m.m[2][2] = m.m[3][3] = 1.0f;
+  m.m[0][1] = m.m[0][2] = m.m[0][3] = 0.0f;
+  m.m[1][0] = m.m[1][2] = m.m[1][3] = 0.0f;
+  m.m[2][0] = m.m[2][1] = m.m[2][3] = 0.0f;
+  m.m[3][0] = m.m[3][1] = m.m[3][2] = 0.0f;
   return m;
 }
 
-
-//平移变换
-inline static Mat4x4f matrix_set_translate(float x,float y,float z)
-{
-  Mat4x4f m=matrix_set_identity();
-  m.m[3][0]=x;
-  m.m[3][1]=y;
-  m.m[3][2]=z;
+// 平移变换
+inline static Mat4x4f matrix_set_translate(float x, float y, float z) {
+  Mat4x4f m = matrix_set_identity();
+  m.m[3][0] = x;
+  m.m[3][1] = y;
+  m.m[3][2] = z;
   return m;
 }
 
-//缩放变换
-inline static Mat4x4f matrix_set_scale(float x, float y, float z)
-{
-  Mat4x4f m= matrix_set_identity();
-  m.m[0][0]=x;
-  m.m[1][1]=y;
-  m.m[2][2]=z;
+// 缩放变换
+inline static Mat4x4f matrix_set_scale(float x, float y, float z) {
+  Mat4x4f m = matrix_set_identity();
+  m.m[0][0] = x;
+  m.m[1][1] = y;
+  m.m[2][2] = z;
   return m;
 }
 
-//旋转变换 围绕(x,y,z)矢量旋转 theta 角度
-inline static Mat4x4f matrix_set_rotate(float x,float y,float z,float theta)
-{
-  float gsin= (float)sin(theta*0.5f);
-  float gcos= (float)cos(theta*0.5f);
-  float w= gcos;
-  Vec3f vec=vector_normalize(Vec3f(x,y,z));
-  x=vec.x*gsin;
-  y=vec.y*gsin;
-  z=vec.z*gsin;
+// 旋转变换 围绕(x,y,z)矢量旋转 theta 角度
+inline static Mat4x4f matrix_set_rotate(float x, float y, float z,
+                                        float theta) {
+  float gsin = (float)sin(theta * 0.5f);
+  float gcos = (float)cos(theta * 0.5f);
+  float w = gcos;
+  Vec3f vec = vector_normalize(Vec3f(x, y, z));
+  x = vec.x * gsin;
+  y = vec.y * gsin;
+  z = vec.z * gsin;
   Mat4x4f m;
-  m.m[0][0]=1-2*y*y-2*z*z;
-  m.m[1][0]=2*x*y-2*w*z;
-  m.m[2][0]=2*x*z+2*w*y;
-  m.m[0][1]=2*x*y+2*w*z;
-  m.m[1][1]=1-2*x*x-2*z*z;
-  m.m[2][1]=2*y*z-2*w*x;
-  m.m[0][2]=2*x*z-2*w*y;
-  m.m[1][2]=2*y*z+2*w*x;
-  m.m[2][2]=1-2*x*x-2*y*y;
-  m.m[0][3]=m.m[1][3]=m.m[2][3]=0.0f;
-  m.m[3][0]=m.m[3][1]=m.m[3][2]=0.0f;
-  m.m[3][3]=1.0f;
+  m.m[0][0] = 1 - 2 * y * y - 2 * z * z;
+  m.m[1][0] = 2 * x * y - 2 * w * z;
+  m.m[2][0] = 2 * x * z + 2 * w * y;
+  m.m[0][1] = 2 * x * y + 2 * w * z;
+  m.m[1][1] = 1 - 2 * x * x - 2 * z * z;
+  m.m[2][1] = 2 * y * z - 2 * w * x;
+  m.m[0][2] = 2 * x * z - 2 * w * y;
+  m.m[1][2] = 2 * y * z + 2 * w * x;
+  m.m[2][2] = 1 - 2 * x * x - 2 * y * y;
+  m.m[0][3] = m.m[1][3] = m.m[2][3] = 0.0f;
+  m.m[3][0] = m.m[3][1] = m.m[3][2] = 0.0f;
+  m.m[3][3] = 1.0f;
   return m;
 }
 
-//摄像机变换矩阵 eye/视点为止，at/看向哪里，up/指向上方的矢量
-inline static Mat4x4f matrix_set_lookat(const Vec3f &eye,const Vec3f &at, const Vec3f &up)
-{
-  Vec3f zaxis=vector_normalize(at-eye);
-  Vec3f xaxis=vector_normalize(vector_cross(up,zaxis));
-  Vec3f yaxis= vector_cross(zaxis,xaxis);
+// 摄像机变换矩阵 eye/视点为止，at/看向哪里，up/指向上方的矢量
+inline static Mat4x4f matrix_set_lookat(const Vec3f &eye, const Vec3f &at,
+                                        const Vec3f &up) {
+  Vec3f zaxis = vector_normalize(at - eye);
+  Vec3f xaxis = vector_normalize(vector_cross(up, zaxis));
+  Vec3f yaxis = vector_cross(zaxis, xaxis);
   Mat4x4f m;
-  m.SetCol(0,Vec4f(xaxis.x,xaxis.y,xaxis.z,-vector_dot(eye,xaxis)));
-  m.SetCol(1,Vec4f(yaxis.x,yaxis.y,yaxis.z,-vector_dot(eye,yaxis)));
-  m.SetCol(3,Vec4f(0.0f,0.0f,0.0f,1.0f));
+  m.SetCol(0, Vec4f(xaxis.x, xaxis.y, xaxis.z, -vector_dot(eye, xaxis)));
+  m.SetCol(1, Vec4f(yaxis.x, yaxis.y, yaxis.z, -vector_dot(eye, yaxis)));
+  m.SetCol(3, Vec4f(0.0f, 0.0f, 0.0f, 1.0f));
   return m;
 }
 
-//D3DXMatrixPerspectiveFovLH
-inline static Mat4x4f matrix_set_perspective(float fovy,float aspect ,float zn,float zf)
-{
-  float fax= 1.0f/(float)tan(fovy*0.5f);
-  Mat4x4f m= matrix_set_zero();
-  m.m[0][0]=(float)(fax/aspect);
-  m.m[1][1]=(float)(fax);
-  m.m[2][2]=zf/(zf-zn);
-  m.m[3][2]=-zn*zf/(zf-zn);
-  m.m[2][3]=1;
+// D3DXMatrixPerspectiveFovLH
+inline static Mat4x4f matrix_set_perspective(float fovy, float aspect, float zn,
+                                             float zf) {
+  float fax = 1.0f / (float)tan(fovy * 0.5f);
+  Mat4x4f m = matrix_set_zero();
+  m.m[0][0] = (float)(fax / aspect);
+  m.m[1][1] = (float)(fax);
+  m.m[2][2] = zf / (zf - zn);
+  m.m[3][2] = -zn * zf / (zf - zn);
+  m.m[2][3] = 1;
   return m;
 }
 //----------
-//位图库，用于加载/保存图片 ，画点，画线颜色读取
+// 位图库，用于加载/保存图片 ，画点，画线颜色读取
 //-----
-class Bitmap
-{
-  public: 
-  inline virtual ~Bitmap()
-  {
-    if(_bits)
-    delete[] _bits;
-    _bits=nullptr;
+class Bitmap {
+public:
+  inline virtual ~Bitmap() {
+    if (_bits)
+      delete[] _bits;
+    _bits = nullptr;
   }
-  inline Bitmap(int width,int height):_w(width),_h(height)
-  {
-    _pitch=width*4;
-    _bits=new uint8_t[_pitch*_h];
+  inline Bitmap(int width, int height) : _w(width), _h(height) {
+    _pitch = width * 4;
+    _bits = new uint8_t[_pitch * _h];
     Fill(0);
   }
 
-  inline Bitmap(const Bitmap &src):_w(src._w),_h(src._h),_pitch(src._pitch)
-  {
-    _bits=new uint8_t[_pitch*_h];
-    memcpy(_bits,src._bits,_pitch*_h);
+  inline Bitmap(const Bitmap &src)
+      : _w(src._w), _h(src._h), _pitch(src._pitch) {
+    _bits = new uint8_t[_pitch * _h];
+    memcpy(_bits, src._bits, _pitch * _h);
   }
 
-  inline Bitmap(const char * filename )
-  {
-    Bitmap* tmp= LoadFile(filename);
-    if(tmp==nullptr)
-    {
-      std::string msg="load filed:";
+  inline Bitmap(const char *filename) {
+    Bitmap *tmp = LoadFile(filename);
+    if (tmp == nullptr) {
+      std::string msg = "load filed:";
       msg.append(filename);
       throw std::runtime_error(msg);
     }
-  _w=tmp->_w;
-  _h=tmp->_h;
-  _pitch= tmp->_pitch;
-  _bits=tmp->_bits;
-  tmp->_bits=nullptr;
-  delete tmp;
+    _w = tmp->_w;
+    _h = tmp->_h;
+    _pitch = tmp->_pitch;
+    _bits = tmp->_bits;
+    tmp->_bits = nullptr;
+    delete tmp;
   }
-  public:
-  inline int GetW() const {return _w;}
-  inline int GetH() const {return _h;}
-  inline int GetPitch() const {return _pitch;}
-  inline uint8_t *GetBits(){return _bits;}
-  inline const uint8_t *GetBits() const { return _bits;}
-  inline uint8_t *GetLine(int y){return _bits + _pitch * y;}
-  inline const uint8_t *GetLine(int y) const {return _bits+_pitch*y;}
 
-  public:
-  inline void Fill(uint32_t color)
-  {
-    for(int j=0;j<_h;j++)
-    {
-      uint32_t *row=(uint32_t*)(_bits+j*_pitch);
-      for(int i=0;i<_w;i++,row++)
-      {
-        memcpy(row, &color,sizeof(uint32_t));
+public:
+  inline int GetW() const { return _w; }
+  inline int GetH() const { return _h; }
+  inline int GetPitch() const { return _pitch; }
+  inline uint8_t *GetBits() { return _bits; }
+  inline const uint8_t *GetBits() const { return _bits; }
+  inline uint8_t *GetLine(int y) { return _bits + _pitch * y; }
+  inline const uint8_t *GetLine(int y) const { return _bits + _pitch * y; }
+
+public:
+  inline void Fill(uint32_t color) {
+    for (int j = 0; j < _h; j++) {
+      uint32_t *row = (uint32_t *)(_bits + j * _pitch);
+      for (int i = 0; i < _w; i++, row++) {
+        memcpy(row, &color, sizeof(uint32_t));
       }
     }
   }
-  inline void SetPixel(int x,int y,uint32_t color)
-  {
-    if(x>=0&&x<_w&&y>=0&&y<_h)
-    {
-      memcpy(_bits+y*_pitch+x*4, &color,sizeof(uint32_t));
+  inline void SetPixel(int x, int y, uint32_t color) {
+    if (x >= 0 && x < _w && y >= 0 && y < _h) {
+      memcpy(_bits + y * _pitch + x * 4, &color, sizeof(uint32_t));
     }
   }
-inline uint32_t GetPixel(int x,int y)const 
-{
-  uint32_t color=0;
-  if(x>=0 &&x<_w&&y>=0&&y<_h)
-  {
-    memcpy(&color, _bits+y*_pitch+x*4,sizeof(uint32_t));
+  inline uint32_t GetPixel(int x, int y) const {
+    uint32_t color = 0;
+    if (x >= 0 && x < _w && y >= 0 && y < _h) {
+      memcpy(&color, _bits + y * _pitch + x * 4, sizeof(uint32_t));
     }
-}
-
-inline void DrawLine(int x1,int y1,int x2,int y2,uint32_t color)
-{
-  int x,y;
-  if(x1==x2 && y1==y2)
-  {
-    SetPixel(x1,y1,color);
-    return ;
   }
-  else if(x1==x2)
-  {
-    int inc= (y1<=y2)?1:-1;
-    for(y=y1;y!=y2;y+=inc)
-    {
-      SetPixel(x1, y, color);
-    }
-    SetPixel(x2,    y2, color);
-  }
-  else if(y1==y2)
-  {
-    int inc=(x1<=x2)?1:-1;
-    for(x=x1;x!=x2;x+=inc)
-    {
-      SetPixel(x, y1,  color);
-    }
-    SetPixel(x2,y2,  color);
-  }
-  else
-  {
-    int dx=(x1<x2)?x2-x1:x1-x2;
-    int dy=(y1<y2)?y2-y1:y1-y2;
-    int rem=0;
-    if(dx>=dy)
-    {
-      if(x2<x1)
-      x=x1,y=y1,x1=x2,y1=y2,x2=x,y2=y;
-    for(x=x1,y=y1;x<=x2;x++)
-    {
-      SetPixel(x,  y,  color);
-      rem+=dy;
-      if(rem>=dx){
-        rem-=dx;
-        y+=(y2>=y1)?1:-1;
-        SetPixel(x, y,  color);
+  inline void DrawLine(int x1, int y1, int x2, int y2, uint32_t color) {
+    int x, y;
+    if (x1 == x2 && y1 == y2) {
+      SetPixel(x1, y1, color);
+      return;
+    } else if (x1 == x2) {
+      int inc = (y1 <= y2) ? 1 : -1;
+      for (y = y1; y != y2; y += inc) {
+        SetPixel(x1, y, color);
       }
-    }
-    SetPixel(x2, y2,  color);
-    }
-  else
-  {
-    if(y2<y1)
-    {
-      x=x1,y=y1,x1=x2,y1=y2,x2=x,y2=y;
-      for(x=x1,y=y1;y<=y2;y++)
-      {
-        SetPixel(x,  y,  color);
-        rem+=dx;
-        if(rem>=dy)
-        {
-          rem-=dy;
-          x+=(x2>=x1)?1:-1;
-          SetPixel(x,y,  color);
+      SetPixel(x2, y2, color);
+    } else if (y1 == y2) {
+      int inc = (x1 <= x2) ? 1 : -1;
+      for (x = x1; x != x2; x += inc) {
+        SetPixel(x, y1, color);
+      }
+      SetPixel(x2, y2, color);
+    } else {
+      int dx = (x1 < x2) ? x2 - x1 : x1 - x2;
+      int dy = (y1 < y2) ? y2 - y1 : y1 - y2;
+      int rem = 0;
+      if (dx >= dy) {
+        if (x2 < x1)
+          x = x1, y = y1, x1 = x2, y1 = y2, x2 = x, y2 = y;
+        for (x = x1, y = y1; x <= x2; x++) {
+          SetPixel(x, y, color);
+          rem += dy;
+          if (rem >= dx) {
+            rem -= dx;
+            y += (y2 >= y1) ? 1 : -1;
+            SetPixel(x, y, color);
+          }
         }
+        SetPixel(x2, y2, color);
+      } else {
+        if (y2 < y1) {
+          x = x1, y = y1, x1 = x2, y1 = y2, x2 = x, y2 = y;
+        }
+        for (x = x1, y = y1; y <= y2; y++) {
+          SetPixel(x, y, color);
+          rem += dx;
+          if (rem >= dy) {
+            rem -= dy;
+            x += (x2 >= x1) ? 1 : -1;
+            SetPixel(x, y, color);
+          }
+        }
+        SetPixel(x2, y2, color);
       }
-      SetPixel(x2,  y2,  color)
     }
   }
-}
+  struct BITMAPINFOHEADER {
+    uint32_t biSize;
+    uint32_t biWidth;
+    int32_t biHeight;
+    uint16_t biPlanes;
+    uint16_t biBitCount;
+    uint32_t bitCompression;
+    uint32_t biSizeImage;
+    uint32_t biXPelsPerMeter;
+    uint32_t biYPelsPerMeter;
+    uint32_t biClrUsed;
+    uint32_t biClrImportant;
+  };
+  // 读取BMP图片，支持24/32 位两种格式
+  inline static Bitmap *LoadFile(const char *filename) {
+    FILE *fp = fopen(filename, "rb");
+    if (fp == nullptr)
+      return nullptr;
+    BITMAPINFOHEADER info;
+    uint8_t header[14];
+    int hr = (int)fread(header, 1, 14, fp);
+    if (hr != 14) {
+      fclose(fp);
+      return nullptr;
+    }
+    if (header[0] != 0x42 || header[1] != 0x4d) {
+      fclose(fp);
+      return nullptr;
+    }
+    hr = (int)fread(&info, 1, sizeof(info), fp);
+    if (hr != 40) {
+      fclose(fp);
+      return nullptr;
+    }
+    if (info.biBitCount != 24 && info.biBitCount != 32) {
+      fclose(fp);
+      return nullptr;
+    }
+    Bitmap *bmp = new Bitmap(info.biWidth, info.biHeight);
+    uint32_t offset;
+    memcpy(&offset, header + 10, sizeof(uint32_t));
+    fseek(fp, offset, SEEK_SET);
+    uint32_t pixelsize = (info.biBitCount + 7) / 8;
+    uint32_t pitch = (pixelsize * info.biWidth + 3) & (~3);
+    for (int y = 0; y < (int)info.biHeight; y++) {
+      uint8_t *line = bmp->GetLine(info.biHeight - 1 - y);
+      for (int x = 0; x < (int)info.biWidth; x++, line += 4) {
+        line[3] = 255;
+        fread(line, pixelsize, 1, fp);
+      }
+      fseek(fp, pitch - info.biWidth * pixelsize, SEEK_CUR);
+    }
+    fclose(fp);
+    return bmp;
+  }
+
 protected:
-int32_t _w;
-int32_t _h;
-int32_t _pitch;
-uint8_t *_bits;
-}
-struct BITMAPINFOHEADER
-{
-  uint32_t biSize;
-  uint32_t biWidth;
-  int32_t biHeight;
-  uint16_t biPlanes;
-  uint16_t biBitCount;
-  uint32_t bitCompression;
-  uint32_t biSizeImage;
-  uint32_t biXPelsPerMeter;
-  uint32_t biYPelsPerMeter;
-  uint32_t biClrUsed;
-  uint32_t biClrImportant;
+  int32_t _w;
+  int32_t _h;
+  int32_t _pitch;
+  uint8_t *_bits;
 };
-//读取BMP图片，支持24/32 位两种格式
-inline static Bitmap *LoadFile(const char* filename)
-{
-  FILE *fp=fopen(filename,"rb");
-  if(fp=nullptr)
-  return nullptr;
-BITMAPINFOHEADER info;
-uint8_ header[14];
-}
-
-}
-
-
 #endif
