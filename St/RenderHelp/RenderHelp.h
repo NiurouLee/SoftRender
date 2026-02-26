@@ -118,7 +118,7 @@ template <typename T> struct Vector<3, T> {
   };
   inline Vector() : x(T()), y(T()), z(T()) {}
   inline Vector(T X, T Y, T Z) : x(X), y(Y), z(Z) {}
-  inline Vector(const Vector<3, T> &u) : x(u.x), y(u.y), z(y.z) {}
+  inline Vector(const Vector<3, T> &u) : x(u.x), y(u.y), z(u.z) {}
   inline Vector(const T *ptr) : x(ptr[0]), y(ptr[1]), z(ptr[2]) {}
   inline const T &operator[](size_t i) const {
     assert(i < 3);
@@ -1101,6 +1101,37 @@ public:
     }
     fclose(fp);
     return bmp;
+  }
+  inline bool SaveFile(const char *filename, bool withAlpha = false) const {
+    FILE *fp = std::fopen(filename, "wb");
+    if (fp == nullptr) {
+      return false;
+    }
+    BITMAPINFOHEADER info;
+    uint32_t pixelsize = (withAlpha) ? 4 : 3;
+    uint32_t pitch = (GetW() * pixelsize + 3) & (~3);
+    info.biSizeImage= pitch*GetH();
+    uint32_t bfSize=54+info.biSizeImage;
+    uint32_t zero= 0,offset=54;
+    fputc(0x42,fp);
+    fputc(0x4d,fp);
+    std::fwrite(&bfSize,4,1,fp);
+    std::fwrite(&zero,4,1,fp);
+    std::fwrite(&offset,4,1,fp);
+    info.biSize=40;
+    info.biWidth=GetW();
+    info.biHeight=GetH();
+    info.biPlanes=1;
+    info.biBitCount=(withAlpha)?32:24;
+    info.bitCompression=0;
+    info.biXPelsPerMeter=0xb12;
+    info.biYPelsPerMeter=0xb12;
+    info.biClrUsed=0;
+    info.biClrImportant=0;
+    
+
+
+
   }
 
 protected:
